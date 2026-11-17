@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>kut.nz · enlaces cortos, QR y métricas</title>
+  <meta name="description" content="Acorta enlaces, genera su QR y mide sus visitas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="/static/kut.css?v=20261117i">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/static/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#273462">
+  <script src="/static/app.js?v=20261117i" defer></script>
+</head>
+<body>
+  <nav class="nav" aria-label="Principal">
+    <a class="logo" href="/" data-link>kut<span>.nz</span></a>
+    <div class="nav-actions">
+      <a class="btn btn-ghost btn-small" href="/panel" data-link data-auth="in" hidden>Mis enlaces</a>
+      <a class="btn btn-ghost btn-small" href="/admin" data-link data-auth="admin" hidden>Admin</a>
+      <button class="btn btn-dark btn-small" id="login" data-auth="out">Iniciar sesión</button>
+      <button class="btn btn-danger btn-small" id="logout" data-auth="in" hidden>Salir</button>
+    </div>
+  </nav>
+
+  <!-- ============ PORTADA ============ -->
+  <main id="view-home" data-view="home">
+    <section class="band band-navy hero">
+      <div class="wrap hero-grid">
+        <div>
+          <h1 class="display">Todo tu enlace, en corto.</h1>
+          <p class="lead">Pega un enlace largo y recibe uno como <b>kut.nz/abc1234</b> con su código QR.
+            Con cuenta: alias, caducidad, límite de clics, contraseña y métricas.</p>
+          <form class="shorten" id="shorten-form" novalidate>
+            <label class="sr-only" for="url">Enlace largo</label>
+            <input id="url" name="url" type="url" inputmode="url" placeholder="https://tu-enlace-muy-largo.com/…" required autocomplete="off">
+            <button class="btn btn-yellow" type="submit">Acortar</button>
+          </form>
+          <details class="advanced" id="advanced">
+            <summary>Opciones avanzadas</summary>
+            <p class="hint" data-auth="out">Alias, caducidad, límite de clics y contraseña son para cuentas.
+              <button type="button" class="btn btn-yellow btn-small" data-open-auth="signup">Crear cuenta gratis</button></p>
+            <div class="grid-form" data-auth="in" hidden>
+              <div class="field"><label for="alias">Alias personalizado</label>
+                <input id="alias" placeholder="mi-cv" maxlength="32" autocomplete="off"></div>
+              <div class="field"><label for="title">Nombre (solo para ti)</label>
+                <input id="title" placeholder="Mi CV profesional" maxlength="120"></div>
+              <div class="field"><label for="expires">Caduca el</label>
+                <input id="expires" type="datetime-local"></div>
+              <div class="field"><label for="max_clicks">Máximo de clics</label>
+                <input id="max_clicks" type="number" min="1" placeholder="1 = un solo uso"></div>
+              <div class="field"><label for="password">Contraseña</label>
+                <input id="password" type="password" minlength="4" maxlength="128" autocomplete="new-password"></div>
+            </div>
+          </details>
+          <p class="error-msg" id="shorten-error" role="alert" hidden></p>
+          <div class="card result" id="result" hidden aria-live="polite">
+            <img class="qr" id="result-qr" alt="Código QR del enlace corto">
+            <div>
+              <div class="short-link" id="result-url"></div>
+              <div class="target" id="result-target"></div>
+              <div class="row">
+                <button class="btn btn-dark btn-small" id="copy">Copiar</button>
+                <a class="btn btn-sky btn-small" id="dl-png">QR PNG</a>
+                <a class="btn btn-sky btn-small" id="dl-svg">QR SVG</a>
+                <a class="btn btn-ghost btn-small" id="preview-link" target="_blank" rel="noopener">Vista previa</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="blob-stack" aria-hidden="true">
+          <div class="blob b1"><span class="big">302</span>redirección sin caché</div>
+          <div class="blob b2"><span class="big">2 AZ</span>alta disponibilidad</div>
+          <div class="blob b3"><span class="big">QR</span>PNG y SVG</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="band band-yellow">
+      <div class="wrap">
+        <h2 class="section-title">Más que un enlace corto.</h2>
+        <div class="features">
+          <article class="feature"><h3>Alias a tu medida</h3><p>kut.nz/mi-cv en lugar de letras al azar. Sin distinguir mayúsculas.</p></article>
+          <article class="feature"><h3>Cambia el destino</h3><p>El enlace y su QR siguen iguales aunque edites a dónde llevan.</p></article>
+          <article class="feature"><h3>Caduca o se agota</h3><p>Por fecha o por número de visitas. Un límite de 1 es un enlace de un solo uso.</p></article>
+          <article class="feature"><h3>Con contraseña</h3><p>Guardada con argon2 y con límite de intentos contra fuerza bruta.</p></article>
+          <article class="feature"><h3>Métricas honestas</h3><p>País, dispositivo, navegador y origen, sin guardar IPs y sin contar bots.</p></article>
+          <article class="feature"><h3>Verifica antes de abrir</h3><p>Agrega “+” al final (kut.nz/abc1234+) para ver el destino real.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="band band-sky">
+      <div class="wrap hero-grid">
+        <div>
+          <h2 class="section-title">Hecho para escalar.</h2>
+          <p class="lead">Servidores sin estado en dos zonas de disponibilidad, caché en memoria, base de datos distribuida
+            y clics registrados de forma asíncrona. Todo descrito con Terraform en AWS.</p>
+          <a class="btn btn-dark" href="/api/docs">Explorar la API</a>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">API REST</h3>
+          <pre style="margin:0;white-space:pre-wrap;font-size:.85rem">POST   /api/v1/links
+GET    /api/v1/links?q=&amp;sort=
+PATCH  /api/v1/links/{code}
+DELETE /api/v1/links/{code}
+GET    /api/v1/links/{code}/stats
+GET    /api/v1/links/{code}/qr.svg</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ PANEL ============ -->
+  <main id="view-panel" data-view="panel" hidden>
+    <section class="band" style="padding-top:64px">
+      <div class="wrap">
+        <div class="panel-head">
+          <div><h1 class="section-title">Mis enlaces</h1><p id="panel-count" class="hint"></p></div>
+          <a class="btn btn-dark" href="/" data-link>Nuevo enlace</a>
+        </div>
+        <div class="toolbar">
+          <label class="sr-only" for="search">Buscar</label>
+          <input id="search" type="search" placeholder="Buscar enlaces…" title="Busca por código, destino o nombre">
+          <label class="sr-only" for="sort">Ordenar</label>
+          <select id="sort">
+            <option value="-created_at">Más recientes</option>
+            <option value="created_at">Más antiguos</option>
+            <option value="-clicks">Más clics</option>
+            <option value="code">Código A–Z</option>
+            <option value="status">Estado</option>
+          </select>
+        </div>
+        <div class="links" id="links"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ ADMIN ============ -->
+  <main id="view-admin" data-view="admin" hidden>
+    <section class="band" style="padding-top:64px">
+      <div class="wrap">
+        <h1 class="section-title">Moderación</h1>
+        <div class="grid-form" style="margin-top:24px">
+          <form class="card" id="block-domain"><h3 style="margin-top:0">Bloquear dominio</h3>
+            <div class="field"><label for="bd">Dominio</label><input id="bd" placeholder="phishing.example" required></div>
+            <p><button class="btn btn-dark btn-small">Bloquear</button></p></form>
+          <form class="card" id="block-user"><h3 style="margin-top:0">Bloquear cuenta</h3>
+            <div class="field"><label for="bu">ID de usuario (sub de Cognito)</label><input id="bu" required></div>
+            <p><button class="btn btn-dark btn-small">Bloquear</button></p></form>
+          <form class="card" id="disable-link"><h3 style="margin-top:0">Desactivar enlace</h3>
+            <div class="field"><label for="dl">Código</label><input id="dl" required></div>
+            <p><button class="btn btn-dark btn-small">Desactivar</button></p></form>
+        </div>
+        <h2 style="margin-top:40px">Reportes recientes</h2>
+        <div class="links" id="reports"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site"><a href="/" data-link>kut.nz</a></footer>
+
+  <!-- ============ CUENTA (login propio, sin la página genérica de Cognito) ============ -->
+  <dialog id="auth" class="auth-dialog" aria-labelledby="auth-title">
+    <div class="auth-card">
+      <button class="btn btn-ghost btn-small auth-close" id="auth-close" aria-label="Cerrar">✕</button>
+      <a class="logo" href="/">kut<span>.nz</span></a>
+      <h2 class="auth-title" id="auth-title"></h2>
+      <p class="auth-sub" id="auth-sub"></p>
+      <div class="auth-tabs" id="auth-tabs" role="tablist">
+        <button type="button" role="tab" data-mode="signin">Entrar</button>
+        <button type="button" role="tab" data-mode="signup">Crear cuenta</button>
+      </div>
+      <form id="auth-form" novalidate>
+        <div class="field" data-for="email"><label for="a-email">Correo</label>
+          <input id="a-email" type="email" autocomplete="email" required></div>
+        <div class="field" data-for="code"><label for="a-code">Código que te enviamos por correo</label>
+          <input id="a-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></div>
+        <div class="field" data-for="password"><label for="a-password">Contraseña</label>
+          <input id="a-password" type="password" autocomplete="current-password" minlength="10"></div>
+        <p class="hint" data-for="rules">Mínimo 10 caracteres, con al menos una minúscula y un número.</p>
+        <p class="error-msg" id="auth-error" role="alert" hidden></p>
+        <p class="ok-msg" id="auth-ok" role="status" hidden></p>
+        <button class="btn btn-dark auth-submit" id="auth-submit" type="submit"></button>
+      </form>
+      <div class="auth-links">
+        <button type="button" class="link" data-mode="forgot" data-show="signin">¿Olvidaste tu contraseña?</button>
+        <button type="button" class="link" id="auth-resend" data-show="confirm">Reenviar código</button>
+        <button type="button" class="link" data-mode="signin" data-show="confirm forgot reset">Volver a entrar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============ MODALES ============ -->
+  <dialog id="modal"><div class="modal-body">
+    <div class="modal-head"><h2 id="modal-title"></h2>
+      <button class="btn btn-ghost btn-small" id="modal-close" aria-label="Cerrar">✕</button></div>
+    <div id="modal-content"></div>
+  </div></dialog>
+</body>
+</html>

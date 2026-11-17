@@ -1,0 +1,87 @@
+name: pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || 'deploy' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validar JS, CSS, HTML y manifest
+        run: node scripts/validate.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: static
+          path: static/
+          retention-days: 7
+
+  deploy-dev:
+    name: Deploy Dev
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+      url: https://dev.kut.nz
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+      - uses: actions/download-artifact@v4
+        with:
+          name: static
+          path: static
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: bash .github/scripts/deploy_static.sh
+        env:
+          PUBLIC_HOST: ${{ vars.PUBLIC_HOST }}
+
+  deploy-prod:
+    name: Deploy Prod
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: https://kut.nz
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+      - uses: actions/download-artifact@v4
+        with:
+          name: static
+          path: static
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: bash .github/scripts/deploy_static.sh
+        env:
+          PUBLIC_HOST: ${{ vars.PUBLIC_HOST }}
