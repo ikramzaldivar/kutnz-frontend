@@ -57,11 +57,13 @@ async function cognito(action, body) {
   return data;
 }
 
+// Guarda los tokens de Cognito; el refresh token solo llega al iniciar sesión, no al renovar.
 function saveSession(result) {
   store.setItem("kut_token", result.AccessToken);
   if (result.RefreshToken) store.setItem("kut_refresh", result.RefreshToken);
 }
 
+// Renueva el access token con el refresh token. Devuelve false si no hay sesión o en modo dev.
 async function refresh() {
   const rt = store.getItem("kut_refresh");
   if (!rt || CONFIG.auth_mode === "dev") return false;
@@ -74,6 +76,7 @@ async function refresh() {
   } catch { return false; }
 }
 
+// Cierra la sesión en Cognito (si aplica) y borra los tokens locales.
 async function logout() {
   if (CONFIG.auth_mode !== "dev" && token()) {
     await cognito("GlobalSignOut", { AccessToken: token() }).catch(() => {});
