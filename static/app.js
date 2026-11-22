@@ -1,6 +1,7 @@
 // kut.nz — frontend sin dependencias. Consume la misma API REST que cualquier cliente.
 "use strict";
 
+// Atajos del DOM: $ devuelve el primer elemento, $$ un arreglo, h() crea un elemento con atributos e hijos.
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const h = (tag, attrs = {}, ...children) => {
