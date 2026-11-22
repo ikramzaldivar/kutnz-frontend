@@ -219,6 +219,7 @@ $("#auth-resend")?.addEventListener("click", async () => {
 });
 
 // ---------------- API ----------------
+// Llama a la API con el token actual. Ante un 401 intenta renovar la sesión una sola vez y repite la petición.
 async function api(path, { method = "GET", body, headers = {}, retry = true } = {}) {
   const opts = { method, headers: { ...headers } };
   if (token()) opts.headers.Authorization = `Bearer ${token()}`;
@@ -258,6 +259,7 @@ document.addEventListener("click", (ev) => {
 window.addEventListener("popstate", render);
 
 // ---------------- utilidades de UI ----------------
+// Las fechas de la API vienen en segundos epoch; los <input type="datetime-local"> usan hora local.
 const fmtDate = (ts) => ts ? new Date(ts * 1000).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" }) : "—";
 const toLocalInput = (ts) => {
   if (!ts) return "";
