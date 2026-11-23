@@ -27,6 +27,8 @@ jobs:
           node-version: 22
       - name: Validar JS, CSS, HTML y manifest
         run: node scripts/validate.mjs
+      - name: Pruebas unitarias (node --test)
+        run: node --test --test-reporter=spec test/*.test.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: static

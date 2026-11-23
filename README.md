@@ -17,9 +17,22 @@ node scripts/validate.mjs
 
 Revisa la sintaxis de cada JS, las llaves de `kut.css`, el `manifest.json` y que cada `/static/...` de `index.html` exista.
 
+## Pruebas unitarias
+
+```bash
+node --test test/*.test.mjs
+```
+
+Usan el runner de Node (`node:test`), sin dependencias. `test/harness.mjs` carga `static/app.js` tal cual se publica dentro de un contexto de `node:vm`, con `fetch`, `localStorage` y un DOM mínimos simulados.
+
+| Archivo | Qué prueba |
+| --- | --- |
+| `test/api.test.mjs` | Cliente de la API (token, body JSON, errores, renovación ante un 401 sin bucles), errores de Cognito, `logout` y el arranque con y sin sesión |
+| `test/utilidades.test.mjs` | Política de contraseña, conversiones de fecha (en zona `America/Mexico_City`), textos del panel, `h()` y el desglose de métricas |
+
 ## Pipeline (`.github/workflows/pipeline.yml`)
 
-1. **Build:** validación y artefacto `static`.
+1. **Build:** validación, pruebas unitarias y artefacto `static`.
 2. **Deploy Dev:** `aws s3 sync` al bucket de Dev, invalidación de `/static/*` en CloudFront y smoke test que compara el SHA-256 de lo publicado.
 3. **Aprobación:** environment `prod`.
 4. **Deploy Prod:** el mismo artefacto, a Prod.
