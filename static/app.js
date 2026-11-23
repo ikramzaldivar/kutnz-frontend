@@ -1,6 +1,7 @@
 // kut.nz — frontend sin dependencias. Consume la misma API REST que cualquier cliente.
 "use strict";
 
+// Atajos del DOM: $ devuelve el primer elemento, $$ un arreglo, h() crea un elemento con atributos e hijos.
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const h = (tag, attrs = {}, ...children) => {
@@ -56,11 +57,13 @@ async function cognito(action, body) {
   return data;
 }
 
+// Guarda los tokens de Cognito; el refresh token solo llega al iniciar sesión, no al renovar.
 function saveSession(result) {
   store.setItem("kut_token", result.AccessToken);
   if (result.RefreshToken) store.setItem("kut_refresh", result.RefreshToken);
 }
 
+// Renueva el access token con el refresh token. Devuelve false si no hay sesión o en modo dev.
 async function refresh() {
   const rt = store.getItem("kut_refresh");
   if (!rt || CONFIG.auth_mode === "dev") return false;
@@ -73,6 +76,7 @@ async function refresh() {
   } catch { return false; }
 }
 
+// Cierra la sesión en Cognito (si aplica) y borra los tokens locales.
 async function logout() {
   if (CONFIG.auth_mode !== "dev" && token()) {
     await cognito("GlobalSignOut", { AccessToken: token() }).catch(() => {});
@@ -215,6 +219,7 @@ $("#auth-resend")?.addEventListener("click", async () => {
 });
 
 // ---------------- API ----------------
+// Llama a la API con el token actual. Ante un 401 intenta renovar la sesión una sola vez y repite la petición.
 async function api(path, { method = "GET", body, headers = {}, retry = true } = {}) {
   const opts = { method, headers: { ...headers } };
   if (token()) opts.headers.Authorization = `Bearer ${token()}`;
@@ -254,6 +259,7 @@ document.addEventListener("click", (ev) => {
 window.addEventListener("popstate", render);
 
 // ---------------- utilidades de UI ----------------
+// Las fechas de la API vienen en segundos epoch; los <input type="datetime-local"> usan hora local.
 const fmtDate = (ts) => ts ? new Date(ts * 1000).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" }) : "—";
 const toLocalInput = (ts) => {
   if (!ts) return "";

@@ -9,6 +9,17 @@ Interfaz web de **kut.nz**: una SPA en JavaScript sin framework (`app.js`, `kut.
 
 `index.html` lo sirve el backend ([kutnz-backend](https://github.com/ikramzaldivar/kutnz-backend)). Los cambios de interfaz que publica este repo están en `app.js` (textos y comportamiento), `kut.css` (estilos) y `pages.js` (páginas de vista previa y error).
 
+## Archivos
+
+| Archivo | Contenido |
+| --- | --- |
+| `static/index.html` | Estructura de la SPA (la sirve el backend) |
+| `static/app.js` | Lógica: sesión con Cognito, llamadas a la API, navegación, panel y admin |
+| `static/kut.css` | Estilos y paleta del equipo |
+| `static/pages.js` | Botón «Reportar enlace» de las páginas de vista previa y de error |
+| `static/manifest.json` y PNG/SVG | Manifest e íconos de la PWA |
+| `scripts/validate.mjs` | Validación sin dependencias que corre en el pipeline |
+
 ## Validar localmente
 
 ```bash
