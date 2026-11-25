@@ -41,6 +41,12 @@ Usan el runner de Node (`node:test`), sin dependencias. `test/harness.mjs` carga
 | `test/api.test.mjs` | Cliente de la API (token, body JSON, errores, renovación ante un 401 sin bucles), errores de Cognito, `logout` y el arranque con y sin sesión |
 | `test/utilidades.test.mjs` | Política de contraseña, conversiones de fecha (en zona `America/Mexico_City`), textos del panel, `h()` y el desglose de métricas |
 
+Antes de abrir un PR conviene correr las dos revisiones, igual que el paso **Build** del pipeline:
+
+```bash
+node scripts/validate.mjs && node --test test/*.test.mjs
+```
+
 ## Pipeline (`.github/workflows/pipeline.yml`)
 
 1. **Build:** validación, pruebas unitarias y artefacto `static`.
