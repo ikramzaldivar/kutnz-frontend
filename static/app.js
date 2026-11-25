@@ -237,6 +237,7 @@ async function api(path, { method = "GET", body, headers = {}, retry = true } = 
 }
 
 // ---------------- navegación (SPA) ----------------
+// Cada ruta muestra una sección [data-view] de index.html; cualquier otra ruta cae en la portada.
 const VIEWS = { "/": "home", "/panel": "panel", "/admin": "admin" };
 
 function navigate(path) {
@@ -538,6 +539,7 @@ adminForm("#block-user", (user_id) => api("/api/v1/admin/blocked-users", { metho
 adminForm("#disable-link", (code) => api(`/api/v1/admin/links/${code}/disable`, { method: "POST" }));
 
 // ---------------- arranque ----------------
+// Muestra u oculta los elementos [data-auth]: "in" con sesión, "out" sin sesión, "admin" solo para administradores.
 function applyAuthUI() {
   $$("[data-auth]").forEach((el) => {
     const need = el.dataset.auth;
