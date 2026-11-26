@@ -412,6 +412,20 @@ function showQr(l) {
       h("a", { class: "btn btn-sky btn-small", href: `${l.qr_svg}?download=true` }, "Descargar SVG"))));
 }
 
+// Cuerpo del PATCH al editar: solo los campos que el usuario cambió. Si se reenviara todo, un enlace
+// ya caducado no se podría editar (el backend rechaza una caducidad en el pasado aunque no se tocara).
+// v trae los valores del formulario tal cual (texto de cada input).
+function editChanges(l, v) {
+  const body = {};
+  if (v.url !== l.target) body.url = v.url;
+  if (v.title !== (l.title || "")) body.title = v.title;
+  if (v.expires !== toLocalInput(l.expires_at)) body.expires_at = fromLocalInput(v.expires); // vacío = sin caducidad
+  if (v.max !== String(l.max_clicks ?? "")) body.max_clicks = v.max ? Number(v.max) : null;
+  if (v.password) body.password = v.password;
+  else if (v.removePassword) body.password = "";
+  return body;
+}
+
 function editLink(l) {
   const f = (id, label, input) => h("div", { class: "field" }, h("label", { for: id }, label), input);
   const form = h("form", {},
@@ -426,10 +440,11 @@ function editLink(l) {
     h("p", {}, h("button", { class: "btn btn-dark" }, "Guardar cambios")));
   form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
-    const body = { url: $("#e-url").value, title: $("#e-title").value,
-      expires_at: fromLocalInput($("#e-exp").value), max_clicks: $("#e-max").value ? Number($("#e-max").value) : null };
-    if ($("#e-pwd").value) body.password = $("#e-pwd").value;
-    else if ($("#e-nopwd")?.checked) body.password = "";
+    const body = editChanges(l, {
+      url: $("#e-url").value, title: $("#e-title").value, expires: $("#e-exp").value, max: $("#e-max").value,
+      password: $("#e-pwd").value, removePassword: !!$("#e-nopwd")?.checked,
+    });
+    if (!Object.keys(body).length) return $("#modal").close(); // nada que guardar
     try {
       await api(`/api/v1/links/${l.code}`, { method: "PATCH", body });
       $("#modal").close(); loadPanel();
