@@ -66,7 +66,8 @@ const settle = () => new Promise((resolve) => setImmediate(resolve));
  */
 export async function loadApp({ fetch = backend, storage = {}, pathname = "/" } = {}) {
   const items = new Map(Object.entries(storage));
-  const app = { fetch, calls: [], storage: items, assigned: [] };
+  // alerts: mensajes mostrados con alert(); confirmAnswer: lo que contesta confirm().
+  const app = { fetch, calls: [], storage: items, assigned: [], alerts: [], confirmAnswer: true };
   const noop = () => {};
 
   const ctx = vm.createContext({
@@ -97,6 +98,8 @@ export async function loadApp({ fetch = backend, storage = {}, pathname = "/" } 
     console,
     setTimeout, clearTimeout, setInterval, clearInterval,
     requestAnimationFrame: noop,
+    alert: (msg) => app.alerts.push(String(msg)),
+    confirm: () => app.confirmAnswer,
   });
 
   vm.runInContext(SRC, ctx, { filename: "static/app.js" });

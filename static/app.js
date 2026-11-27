@@ -276,6 +276,22 @@ function openModal(title, content) {
 }
 $("#modal-close")?.addEventListener("click", () => $("#modal").close());
 
+// Acción de un botón contra la API: lo deshabilita mientras espera (evita dobles clics) y, si falla,
+// muestra el error en lugar de dejarlo solo en la consola. Devuelve true si salió bien.
+async function act(btn, run) {
+  const wasDisabled = btn.disabled;
+  btn.disabled = true;
+  try {
+    await run();
+    return true;
+  } catch (e) {
+    alert(e.message);
+    return false;
+  } finally {
+    btn.disabled = wasDisabled;
+  }
+}
+
 async function copy(text, btn) {
   await navigator.clipboard.writeText(text);
   const old = btn.textContent;
@@ -372,7 +388,10 @@ function linkRow(l) {
   const badge = h("span", { class: `badge ${l.status}` }, l.status);
   const meta = h("div", { class: "meta" }, metaText(l));
   const toggle = h("button", { class: "btn btn-ghost btn-small", disabled: l.disabled_by_admin,
-    onclick: async () => { await api(`/api/v1/links/${ref.l.code}`, { method: "PATCH", body: { disabled: !ref.l.disabled } }); loadPanel(); } },
+    onclick: (e) => act(e.currentTarget, async () => {
+      await api(`/api/v1/links/${ref.l.code}`, { method: "PATCH", body: { disabled: !ref.l.disabled } });
+      loadPanel();
+    }) },
     l.disabled ? "Reactivar" : "Desactivar");
   const row = h("div", { class: "link-row", "data-code": l.code },
     h("div", {},
@@ -387,9 +406,12 @@ function linkRow(l) {
       h("button", { class: "btn btn-sky btn-small", onclick: () => showStats(ref.l) }, "Métricas"),
       h("button", { class: "btn btn-ghost btn-small", onclick: () => editLink(ref.l) }, "Editar"),
       toggle,
-      h("button", { class: "btn btn-ghost btn-small", onclick: async () => {
+      h("button", { class: "btn btn-ghost btn-small", onclick: (e) => {
         if (!confirm(`¿Borrar kut.nz/${ref.l.code}? Esta acción no se puede deshacer.`)) return;
-        await api(`/api/v1/links/${ref.l.code}`, { method: "DELETE" }); loadPanel();
+        return act(e.currentTarget, async () => {
+          await api(`/api/v1/links/${ref.l.code}`, { method: "DELETE" });
+          loadPanel();
+        });
       } }, "Borrar")));
   row.patch = (n) => {
     const moreClicks = n.clicks > ref.l.clicks;
@@ -538,8 +560,13 @@ async function loadAdmin() {
     h("div", {}, h("span", { class: "code" }, `kut.nz/${r.code}`), h("div", { class: "meta" }, `${fmtDate(r.created_at)} · ${r.reason || "sin motivo"}`)),
     h("div", { class: "row" },
       h("a", { class: "btn btn-ghost btn-small", href: `/${r.code}+`, target: "_blank", rel: "noopener" }, "Ver destino"),
-      h("button", { class: "btn btn-dark btn-small", onclick: async (e) => {
-        await api(`/api/v1/admin/links/${r.code}/disable`, { method: "POST" }); e.currentTarget.textContent = "Desactivado";
+      h("button", { class: "btn btn-dark btn-small", onclick: (e) => {
+        // e.currentTarget vale null después del await: se guarda el botón antes.
+        const btn = e.currentTarget;
+        return act(btn, async () => {
+          await api(`/api/v1/admin/links/${r.code}/disable`, { method: "POST" });
+          btn.textContent = "Desactivado";
+        });
       } }, "Desactivar")))) : [h("p", { class: "hint" }, "No hay reportes.")]));
 }
 
