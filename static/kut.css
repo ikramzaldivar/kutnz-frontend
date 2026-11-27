@@ -270,7 +270,7 @@ footer.site a:hover { text-decoration: underline; }
 
 /* Ensayo de la demo (Infraestructura para el Desarrollo Continuo): etiqueta junto al logo */
 .nav .logo::after {
-  content: "IDC 2026";
+  content: "Demo IDC content: "IDC 2026";0B7 en vivo";
   margin-left: .5rem; padding: .1rem .5rem; border-radius: 999px;
   font-size: .7rem; font-weight: 700; letter-spacing: 0; vertical-align: middle;
   background: var(--yellow); color: var(--navy);
