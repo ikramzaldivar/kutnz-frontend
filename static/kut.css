@@ -1,6 +1,7 @@
 /* kut.nz — estética tipo Linktree: bloques de color a todo el ancho, tipografía enorme,
    botones tipo píldora y movimiento suave. Paleta del equipo. */
 :root {
+  /* Paleta del equipo y tokens de diseño (radios, sombra, tipografía) que reutiliza el resto de la hoja. */
   --navy: #273462;
   --blue: #045490;
   --sky: #84B7CE;

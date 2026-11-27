@@ -9,6 +9,7 @@ let errores = 0;
 const falla = (msg) => { console.error(`✗ ${msg}`); errores++; };
 const ok = (msg) => console.log(`✓ ${msg}`);
 
+// 1. Sintaxis de cada archivo JS con `node --check` (no lo ejecuta).
 for (const f of readdirSync(DIR).filter((f) => f.endsWith(".js"))) {
   try {
     execFileSync(process.execPath, ["--check", join(DIR, f)], { stdio: "pipe" });
@@ -18,6 +19,7 @@ for (const f of readdirSync(DIR).filter((f) => f.endsWith(".js"))) {
   }
 }
 
+// 2. El manifest es JSON válido y cada ícono que declara existe.
 try {
   const manifest = JSON.parse(readFileSync(join(DIR, "manifest.json"), "utf8"));
   for (const icon of manifest.icons ?? []) {
@@ -28,11 +30,13 @@ try {
   falla(`manifest.json no es JSON válido: ${e.message}`);
 }
 
+// 3. index.html tiene doctype y cada /static/... que referencia existe.
 const html = readFileSync(join(DIR, "index.html"), "utf8");
 if (!/^<!doctype html>/i.test(html)) falla("index.html sin <!doctype html>");
 for (const [, ref] of html.matchAll(/(?:src|href)="\/static\/([^"?#]+)/g)) {
   existsSync(join(DIR, ref)) ? ok(`index.html → ${ref}`) : falla(`index.html apunta a /static/${ref}, que no existe`);
 }
+// 4. Revisión básica de kut.css: mismas llaves de apertura que de cierre.
 const css = readFileSync(join(DIR, "kut.css"), "utf8");
 const abre = (css.match(/{/g) ?? []).length, cierra = (css.match(/}/g) ?? []).length;
 abre === cierra ? ok(`kut.css: ${abre} bloques balanceados`) : falla(`kut.css: llaves desbalanceadas (${abre} { vs ${cierra} })`);

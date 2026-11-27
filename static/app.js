@@ -237,6 +237,7 @@ async function api(path, { method = "GET", body, headers = {}, retry = true } = 
 }
 
 // ---------------- navegación (SPA) ----------------
+// Cada ruta muestra una sección [data-view] de index.html; cualquier otra ruta cae en la portada.
 const VIEWS = { "/": "home", "/panel": "panel", "/admin": "admin" };
 
 function navigate(path) {
@@ -438,6 +439,7 @@ function editLink(l) {
   openModal(`Editar kut.nz/${l.code}`, form);
 }
 
+// Top 6 de una dimensión de métricas como barras; el ancho es relativo al valor más alto.
 function breakdown(title, obj) {
   const entries = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 6);
   const max = Math.max(1, ...entries.map((e) => e[1]));
@@ -526,6 +528,7 @@ async function loadAdmin() {
       } }, "Desactivar")))) : [h("p", { class: "hint" }, "No hay reportes.")]));
 }
 
+// Conecta un formulario de una sola caja de texto del panel de admin con la acción run(valor).
 function adminForm(id, run) {
   $(id)?.addEventListener("submit", async (ev) => {
     ev.preventDefault();
@@ -538,6 +541,7 @@ adminForm("#block-user", (user_id) => api("/api/v1/admin/blocked-users", { metho
 adminForm("#disable-link", (code) => api(`/api/v1/admin/links/${code}/disable`, { method: "POST" }));
 
 // ---------------- arranque ----------------
+// Muestra u oculta los elementos [data-auth]: "in" con sesión, "out" sin sesión, "admin" solo para administradores.
 function applyAuthUI() {
   $$("[data-auth]").forEach((el) => {
     const need = el.dataset.auth;
